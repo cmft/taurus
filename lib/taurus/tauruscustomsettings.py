@@ -55,6 +55,16 @@ T_FORM_COMPACT = False
 # False enables a backwards-compatibility mode for pre-sep3 model names
 STRICT_MODEL_NAMES = False
 
+# Use Taurus Logger API:
+# True (or commented out) enables the initiatialization of Taurus logger.
+# False Taurus assumed an external Logger system; If it does not exist,
+#       the Logger API will not work. Showing the following message
+#       the first time that any Logger message (warning, debug, info, etc)
+#       was executed.
+#
+#    i.e.    Logger.warning('asd')
+#            No handlers could be found for logger "TaurusRootLogger"
+ENABLE_TAURUS_LOGGER = True
 
 # Lightweight imports:
 # True enables delayed imports (may break older code).
