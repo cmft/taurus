@@ -203,7 +203,6 @@ class TaurusGraphicsScene(Qt.QGraphicsScene):
 
         try:
             self.logger = Logger(name)
-            # self.logger.setLogLevel(self.logger.Info)
             if not self.TRACE_ALL:
                 self.debug = lambda l: self.logger.debug(l)
                 self.info = lambda l: self.logger.info(l)

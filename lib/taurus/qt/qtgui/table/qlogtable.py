@@ -38,7 +38,7 @@ import threading
 import socket
 
 import taurus
-from taurus.core.util.log import Logger
+from taurus.core.util.log import LoggerHelper
 from taurus.core.util.remotelogmonitor import LogRecordStreamHandler, \
     LogRecordSocketReceiver
 from taurus.core.util.decorator.memoize import memoized
@@ -156,7 +156,7 @@ class QLoggingTableModel(Qt.QAbstractTableModel, logging.Handler):
         self._capacity = capacity
         self._records = []
         self._accumulated_records = []
-        Logger.addRootLogHandler(self)
+        LoggerHelper.addRootLogHandler(self)
         self.startTimer(freq * 1000)
 
     # ---------------------------------

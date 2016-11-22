@@ -194,7 +194,7 @@ class DockWidgetPanel(Qt.QDockWidget, TaurusBaseWidget):
         except Exception, e:
             self.info(
                 'Failed to set the widget for this panel. Reason: %s' % repr(e))
-            self.traceback(self.Debug)
+            self.traceback(self.LoggerHelper().Debug)
             return
         TaurusBaseWidget.applyConfig(self, configdict, depth)
 

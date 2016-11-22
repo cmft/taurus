@@ -775,7 +775,9 @@ class TaurusBaseComponent(TaurusListener, BaseConfigurableClass):
                 if self.modelObj is not None:
                     self.modelObj.addListener(self)
                     self._attached = True
-                    self.changeLogName(self.log_name + "." + self.modelName)
+                    log_name = self.getTaurusLogger().getName()
+                    new_name = "{0}.{1}".format(log_name, self.modelName)
+                    self.getTaurusLogger().changeLogName(new_name)
             except Exception:
                 self.modelObj = None
                 self._attached = False
