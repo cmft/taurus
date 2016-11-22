@@ -34,7 +34,7 @@ __all__ = ['check_dependencies', 'log_dependencies', 'getSchemeFromName',
            'resetLogLevel', 'resetLogFormat',
            'enableLogOutput', 'disableLogOutput',
            'log', 'trace', 'debug', 'info', 'warning', 'error', 'fatal',
-           'critical', 'changeDefaultPollingPeriod']
+           'critical', 'changeDefaultPollingPeriod', 'initLogger']
 
 __docformat__ = "restructuredtext"
 
@@ -634,25 +634,27 @@ def Object(*args):
     return factory.getObject(klass, name)
 
 from taurus.core.util import log as __log_mod
+from taurus.core.util.log import LoggerHelper
 
 Logger = __log_mod.Logger
-Critical = Logger.Critical
-Fatal = Logger.Fatal
-Error = Logger.Error
-Warning = Logger.Warning
-Info = Logger.Info
-Debug = Logger.Debug
-Trace = Logger.Trace
+Critical = LoggerHelper.Critical
+Fatal = LoggerHelper.Fatal
+Error = LoggerHelper.Error
+Warning = LoggerHelper.Warning
+Info = LoggerHelper.Info
+Debug = LoggerHelper.Debug
+Trace = LoggerHelper.Trace
 
-setLogLevel = Logger.setLogLevel
-setLogFormat = Logger.setLogFormat
-getLogLevel = Logger.getLogLevel
-getLogFormat = Logger.getLogFormat
-resetLogLevel = Logger.resetLogLevel
-resetLogFormat = Logger.resetLogFormat
+setLogLevel = LoggerHelper.setLogLevel
+setLogFormat = LoggerHelper.setLogFormat
+getLogLevel = LoggerHelper.getLogLevel
+getLogFormat = LoggerHelper.getLogFormat
+resetLogLevel = LoggerHelper.resetLogLevel
+resetLogFormat = LoggerHelper.resetLogFormat
 
-enableLogOutput = Logger.enableLogOutput
-disableLogOutput = Logger.disableLogOutput
+enableLogOutput = LoggerHelper.enableLogOutput
+disableLogOutput = LoggerHelper.disableLogOutput
+initLogger = LoggerHelper.initLogger
 
 log = __log_mod._log
 trace = __log_mod.trace
