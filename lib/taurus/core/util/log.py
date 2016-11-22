@@ -31,7 +31,7 @@ __all__ = ["LogIt", "TraceIt", "DebugIt", "InfoIt", "WarnIt", "ErrorIt",
            "LogFilter",
            "_log", "trace", "debug", "info", "warning", "error", "fatal",
            "critical", "deprecated", "deprecation_decorator",
-           "taurus4_deprecation"]
+           "taurus4_deprecation", "LoggerHelper"]
 
 __docformat__ = "restructuredtext"
 
@@ -48,6 +48,8 @@ import functools
 from object import Object
 from wrap import wraps
 from excepthook import BaseExceptHook
+
+from taurus import tauruscustomsettings
 
 # ------------------------------------------------------------------------------
 # TODO: substitute this ugly hack (below) by a more general mechanism
@@ -103,6 +105,27 @@ def currentframe():
 if hasattr(sys, '_getframe'):
     currentframe = lambda: sys._getframe(3)
 # done filching
+
+
+def deprecation_decorator(func=None, alt=None, rel=None, dbg_msg=None):
+    """decorator to mark methods as deprecated"""
+    if func is None:
+        return functools.partial(deprecation_decorator, alt=alt, rel=rel,
+                                 dbg_msg=dbg_msg)
+
+    def new_func(*args, **kwargs):
+        deprecated(dep=func.__name__, alt=alt, rel=rel, dbg_msg=dbg_msg)
+        return func(*args, **kwargs)
+
+    doc = (func.__doc__ or '')
+    doc += '\n\n.. deprecated:: %s\n' % (rel or '')
+    if alt:
+        doc += '   Use %s instead\n' % alt
+
+    new_func.__name__ = func.__name__
+    new_func.__doc__ = doc
+    new_func.__dict__.update(func.__dict__)
+    return new_func
 
 
 class LogIt(object):
@@ -164,7 +187,7 @@ class LogIt(object):
         @wraps(f)
         def wrapper(*args, **kwargs):
             f_self = args[0]
-            if f_self.log_level > self._level:
+            if f_self.getTaurusLogger().log_level > self._level:
                 return f(*args, **kwargs)
 
             has_log = hasattr(f_self, "log")
@@ -431,11 +454,7 @@ class _Logger(logging.Logger):
             break
         return rv
 
-
-class Logger(Object):
-    """The taurus logger class. All taurus pertinent classes should inherit
-    directly or indirectly from this class if they need taurus logging
-    facilities."""
+class LoggerHelper(object):
 
     #: Internal usage
     root_inited = False
@@ -462,7 +481,7 @@ class Logger(Object):
     Debug = logging.DEBUG
 
     #: Trace message level (constant)
-    Trace = TRACE
+    Trace = logging.DEBUG
 
     #: Default log level (constant)
     DftLogLevel = Info
@@ -482,67 +501,64 @@ class Logger(Object):
     #: the main stream handler
     stream_handler = None
 
-    def __init__(self, name='', parent=None, format=None):
-        """The Logger constructor
-
-        :param name: (str) the logger name (default is empty string)
-        :param parent: (Logger) the parent logger or None if no parent exists (default is None)
-        :param format: (str) the log message format or None to use the default log format (default is None)
-        """
-        self.call__init__(Object)
-
-        if format:
-            self.log_format = format
-        Logger.initRoot()
-
-        if name is None or len(name) == 0:
-            name = self.__class__.__name__
-        self.log_name = name
-        if parent is not None:
-            self.log_full_name = '%s.%s' % (parent.log_full_name, name)
-        else:
-            self.log_full_name = name
-
-        self.log_obj = self._getLogger(self.log_full_name)
+    def __init__(self):
+        self.name = ''
+        self.fullname = ''
+        self.parent = None
+        self.log_obj = None
         self.log_handlers = []
-
-        self.log_parent = None
         self.log_children = {}
-        if parent is not None:
-            self.log_parent = weakref.ref(parent)
-            parent.addChild(self)
 
-    def cleanUp(self):
-        """The cleanUp. Default implementation does nothing
-           Overwrite when necessary"""
-        pass
+        init_logger = getattr(tauruscustomsettings,\
+                              'ENABLE_TAURUS_LOGGER', True)
+        if init_logger:
+            self.initLogger()
+
+    def setName(self, name):
+        self.name = name
+
+    def getName(self):
+        return self.name
+
+    def setFullName(self, fullname):
+        self.fullname = fullname
+
+    def getFullName(self):
+        return self.fullname
+
+    def setParent(self, parent):
+        self.parent = weakref.ref(parent)
+
+    def getParent(self):
+        if self.parent is None:
+            return None
+        return self.parent()
+
+    def setLogObj(self, fullname):
+        self.log_obj = logging.getLogger(fullname)
+
+    def getLogObj(self):
+        return self.log_obj
 
     @classmethod
-    def initRoot(cls):
-        """Class method to initialize the root logger. Do **NOT** call this
-           method directly in your code
-        """
-        if cls.root_inited:
-            return cls._getLogger()
-
-        try:
-            cls.root_init_lock.acquire()
-            root_logger = cls._getLogger()
-            logging.addLevelName(cls.Trace, "TRACE")
-            cls.stream_handler = logging.StreamHandler(sys.__stderr__)
-            cls.stream_handler.setFormatter(cls.log_format)
-            root_logger.addHandler(cls.stream_handler)
-
-            console_log_level = os.environ.get("TAURUSLOGLEVEL", None)
-            if console_log_level is not None:
-                console_log_level = console_log_level.capitalize()
-                if hasattr(cls, console_log_level):
-                    cls.log_level = getattr(cls, console_log_level)
-            root_logger.setLevel(cls.log_level)
-            Logger.root_inited = True
-        finally:
-            cls.root_init_lock.release()
-        return root_logger
+    def initLogger(cls):
+        if not cls.root_inited:
+            try:
+                cls.root_init_lock.acquire()
+                root_logger = logging.getLogger()
+                cls.stream_handler = logging.StreamHandler(sys.__stderr__)
+                cls.stream_handler.setFormatter(cls.log_format)
+                root_logger.addHandler(cls.stream_handler)
+                # TODO: use tauruscustomsetting
+                console_log_level = os.environ.get("TAURUSLOGLEVEL", None)
+                if console_log_level is not None:
+                    console_log_level = console_log_level.capitalize()
+                    if hasattr(cls, console_log_level):
+                        cls.log_level = getattr(cls, console_log_level)
+                root_logger.setLevel(cls.log_level)
+                LoggerHelper.root_inited = True
+            finally:
+                cls.root_init_lock.release()
 
     @classmethod
     def addRootLogHandler(cls, h):
@@ -551,7 +567,7 @@ class Logger(Object):
            :param h: (logging.Handler) the new log handler
         """
         h.setFormatter(cls.getLogFormat())
-        cls.initRoot().addHandler(h)
+        logging.getLogger().addHandler(h)
 
     @classmethod
     def removeRootLogHandler(cls, h):
@@ -559,30 +575,7 @@ class Logger(Object):
 
            :param h: (logging.Handler) the handler to be removed
         """
-        cls.initRoot().removeHandler(h)
-
-    @classmethod
-    def enableLogOutput(cls):
-        """Enables the :class:`logging.StreamHandler` which dumps log records,
-           by default, to the stderr.
-        """
-        cls.initRoot().addHandler(cls.stream_handler)
-
-    @classmethod
-    def disableLogOutput(cls):
-        """Disables the :class:`logging.StreamHandler` which dumps log records,
-           by default, to the stderr.
-        """
-        cls.initRoot().removeHandler(cls.stream_handler)
-
-    @classmethod
-    def setLogLevel(cls, level):
-        """sets the new log level (the root log level)
-
-           :param level: (int) the new log level
-        """
-        cls.log_level = level
-        cls.initRoot().setLevel(level)
+        logging.getLogger().removeHandler(h)
 
     @classmethod
     def getLogLevel(cls):
@@ -593,13 +586,23 @@ class Logger(Object):
         return cls.log_level
 
     @classmethod
-    def setLogFormat(cls, format):
-        """sets the new log message format
+    def setLogLevel(cls,level):
+        """sets the new log level (the root log level)
 
-           :param level: (str) the new log message format
+           :param level: (int) the new log level
         """
+        cls.log_level = level
+        logging.getLogger().setLevel(level)
+
+    @classmethod
+    def resetLogLevel(cls):
+        """Resets the log level (the root log level)"""
+        cls.setLogLevel(cls.DftLogLevel)
+
+    @classmethod
+    def setLogFormat(cls,format):
         cls.log_format = logging.Formatter(format)
-        root_logger = cls.initRoot()
+        root_logger = logging.getLogger()
         for h in root_logger.handlers:
             h.setFormatter(cls.log_format)
 
@@ -612,65 +615,83 @@ class Logger(Object):
         return cls.log_format
 
     @classmethod
-    def resetLogLevel(cls):
-        """Resets the log level (the root log level)"""
-        cls.setLogLevel(cls.DftLogLevel)
-
-    @classmethod
     def resetLogFormat(cls):
         """Resets the log message format (the root log format)"""
         cls.setLogFormat(cls.DftLogFormat)
 
     @classmethod
-    def addLevelName(cls, level_no, level_name):
-        """Registers a new log level
-
-           :param level_no: (int) the level number
-           :param level_name: (str) the corresponding name
+    def enableLogOutput(cls):
+        """Enables the :class:`logging.StreamHandler` which dumps log records,
+           by default, to the stderr.
         """
-        logging.addLevelName(level_no, level_name)
-        level_name = level_name.capitalize()
-        if not hasattr(cls, level_name):
-            setattr(cls, level_name, level_no)
+        logging.getLogger().addHandler(cls.stream_handler)
 
     @classmethod
-    def getRootLog(cls):
-        """Retuns the root logger
-
-           :return: (logging.Logger) the root logger
+    def disableLogOutput(cls):
+        """Disables the :class:`logging.StreamHandler` which dumps log records,
+           by default, to the stderr.
         """
-        return cls.initRoot()
+        logging.getLogger().removeHandler(cls.stream_handler)
 
-    @staticmethod
-    def _getLogger(name=None):
-        orig_logger_class = logging.getLoggerClass()
-        try:
-            logging.setLoggerClass(_Logger)
-            ret = logging.getLogger(name)
-            return ret
-        finally:
-            logging.setLoggerClass(orig_logger_class)
+    def _format_trace(self):
+        return self._format_stack(inspect.trace)
 
-    @classmethod
-    def getLogger(cls, name=None):
-        cls.initRoot()
-        return cls._getLogger(name=name)
+    def _format_stack(self, stack_func=inspect.stack):
+        line_count = 3
+        stack = stack_func(line_count)
+        out = ''
+        for frame_record in stack:
+            out += '\n\t' + 60*'-'
+            frame, filename, line, funcname, lines, index = frame_record
+            #out += '\n\t    depth = %d' % frame[5]
+            out += '\n\t filename = %s' % filename
+            out += '\n\t function = %s' % funcname
+            if lines is None:
+                code = '<code could not be found>'
+                out += '\n\t     line = [%d]: %s' % (line, code)
+            else:
+                lines, line_nb = [ s.strip(' \n') for s in lines ], len(lines)
+                if line_nb >= 3:
+                    out += '\n\t     line = [%d]: %s' % (line-1, lines[0])
+                    out += '\n\t  -> line = [%d]: %s' % (line, lines[1])
+                    out += '\n\t     line = [%d]: %s' % (line+1, lines[2])
+                elif line_nb > 0:
+                    out += '\n\t  -> line = [%d]: %s' % (line, lines[0])
+            if frame:
+                out += '\n\t   locals = '
+                for k,v in frame.f_locals.items():
+                    out += '\n\t\t%20s = ' % k
+                    try:
+                        cut = False
+                        v = str(v)
+                        i = v.find('\n')
+                        if i == -1:
+                            i = 80
+                        else:
+                            i = min(i, 80)
+                            cut = True
+                        if len(v) > 80: cut = True
+                        out += v[:i]
+                        if cut: out += '[...]'
+                    except:
+                        out += '<could not find suitable string representation>'
+        return out
 
-    def getLogObj(self):
-        """Returns the log object for this object
+    def addLogHandler(self, handler):
+        """Registers a new handler in this object's logger
 
-           :return: (logging.Logger) the log object
+           :param handler: (logging.Handler) the new handler to be added
         """
-        return self.log_obj
+        self.getLogObj().addHandler(handler)
+        self.log_handlers.append(handler)
 
-    def getParent(self):
-        """Returns the log parent for this object or None if no parent exists
+    def copyLogHandlers(self, other):
+        """Copies the log handlers of other object to this object
 
-           :return: (logging.Logger or None) the log parent for this object
+           :param other: (object) object which contains 'log_handlers'
         """
-        if self.log_parent is None:
-            return None
-        return self.log_parent()
+        for handler in other.log_handlers:
+            self.addLogHandler(handler)
 
     def getChildren(self):
         """Returns the log children for this object
@@ -690,24 +711,106 @@ class Logger(Object):
            :param child: (logging.Logger) the new child
         """
         if not self.log_children.get(id(child)):
-            self.log_children[id(child)] = weakref.ref(child)
+            self.log_children[id(child)]=weakref.ref(child)
 
-    def addLogHandler(self, handler):
-        """Registers a new handler in this object's logger
+    def changeLogName(self,name):
+        """Change the log name for this object.
 
-           :param handler: (logging.Handler) the new handler to be added
+           :param name: (str) the new log name
         """
-        self.log_obj.addHandler(handler)
-        self.log_handlers.append(handler)
+        self.setName(name)
+        p = self.getParent()
+        if p is not None:
+            log_full_name = '%s.%s' % (p._logger.getFullName(), name)
+        else:
+            log_full_name = name
+        self.setFullName(log_full_name)
+        self.setLogObj(log_full_name)
+        for handler in self.log_handlers:
+            self.getLogObj().addHandler(handler)
+        for child in self.getChildren():
+            child._logger.changeLogName(child._logger.name)
 
-    def copyLogHandlers(self, other):
-        """Copies the log handlers of other object to this object
+    @classmethod
+    def addLevelName(cls, level_no, level_name):
+        """Registers a new log level
 
-           :param other: (object) object which contains 'log_handlers'
+           :param level_no: (int) the level number
+           :param level_name: (str) the corresponding name
         """
-        for handler in other.log_handlers:
-            self.addLogHandler(handler)
+        logging.addLevelName(level_no, level_name)
+        level_name = level_name.capitalize()
+        if not hasattr(cls, level_name):
+            setattr(cls, level_name, level_no)
 
+    @deprecation_decorator(alt="getName", rel='TEP8')
+    def getLogName(self):
+        """Gets the log name for this object
+
+           :return: (str) the log name
+        """
+        return self.getName()
+
+    @deprecation_decorator(alt="getFullName", rel='TEP8')
+    def getLogFullName(self):
+        """Gets the full log name for this object
+
+           :return: (str) the full log name
+        """
+        return self.getFullName()
+
+    @property
+    def log_name(self):
+        return self.getLogName()
+
+
+class Logger(Object):
+    """The taurus logger class. All taurus pertinent classes should inherit
+    directly or indirectly from this class if they need taurus logging
+    facilities."""
+
+    def __init__(self, name='', parent=None, format=None):
+        """The Logger constructor
+
+        :param name: (str) the logger name (default is empty string)
+        :param parent: (Logger) the parent logger or None if no parent exists (default is None)
+        :param format: (str) the log message format or None to use the default log format (default is None)
+        """
+        self.call__init__(Object)
+        self._logger = LoggerHelper()
+
+        if format:
+            self._logger.log_format = format
+
+        if name is None or len(name) == 0:
+            name = self.__class__.__name__
+
+        self._logger.setName(name)
+
+        if parent is not None:
+            log_full_name = '%s.%s' % (parent._logger.getFullName(), name)
+            self._logger.setParent(parent)
+            parent._logger.addChild(self)
+        else:
+            log_full_name = name
+
+        self._logger.setFullName(log_full_name)
+        self._logger.setLogObj(log_full_name)
+
+    def cleanUp(self):
+        """The cleanUp. Default implementation does nothing
+           Overwrite when necessary"""
+        pass
+
+    def getTaurusLogger(self):
+        return self._logger
+
+    # @classmethod
+    # def getLogger(cls, name=None):
+    #     cls.initRoot()
+    #     return cls._getLogger(name=name)
+
+    @deprecation_decorator(alt="debug")
     def trace(self, msg, *args, **kw):
         """Record a trace message in this object's logger. Accepted *args* and
            *kwargs* are the same as :meth:`logging.Logger.log`.
@@ -716,9 +819,9 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.log(self.Trace, msg, *args, **kw)
+        self.debug(msg, *args, **kw)
 
-    def traceback(self, level=Trace, extended=True):
+    def traceback(self, level=LoggerHelper.Trace, extended=True):
         """Log the usual traceback information, followed by a listing of all the
            local variables in each frame.
 
@@ -732,10 +835,13 @@ class Logger(Object):
             out += "\n"
             out += self._format_trace()
 
-        self.log_obj.log(level, out)
+        self._logger.getLogObj().log(level, out)
         return out
 
-    def stack(self, target=Trace):
+    def _format_trace(self):
+        return self._format_stack(inspect.trace)
+
+    def stack(self, target=LoggerHelper.Trace):
         """Log the usual stack information, followed by a listing of all the
            local variables in each frame.
 
@@ -747,52 +853,6 @@ class Logger(Object):
         self.log_obj.log(target, out)
         return out
 
-    def _format_trace(self):
-        return self._format_stack(inspect.trace)
-
-    def _format_stack(self, stack_func=inspect.stack):
-        line_count = 3
-        stack = stack_func(line_count)
-        out = ''
-        for frame_record in stack:
-            out += '\n\t' + 60 * '-'
-            frame, filename, line, funcname, lines, index = frame_record
-            #out += '\n\t    depth = %d' % frame[5]
-            out += '\n\t filename = %s' % filename
-            out += '\n\t function = %s' % funcname
-            if lines is None:
-                code = '<code could not be found>'
-                out += '\n\t     line = [%d]: %s' % (line, code)
-            else:
-                lines, line_nb = [s.strip(' \n') for s in lines], len(lines)
-                if line_nb >= 3:
-                    out += '\n\t     line = [%d]: %s' % (line - 1, lines[0])
-                    out += '\n\t  -> line = [%d]: %s' % (line, lines[1])
-                    out += '\n\t     line = [%d]: %s' % (line + 1, lines[2])
-                elif line_nb > 0:
-                    out += '\n\t  -> line = [%d]: %s' % (line, lines[0])
-            if frame:
-                out += '\n\t   locals = '
-                for k, v in frame.f_locals.items():
-                    out += '\n\t\t%20s = ' % k
-                    try:
-                        cut = False
-                        v = str(v)
-                        i = v.find('\n')
-                        if i == -1:
-                            i = 80
-                        else:
-                            i = min(i, 80)
-                            cut = True
-                        if len(v) > 80:
-                            cut = True
-                        out += v[:i]
-                        if cut:
-                            out += '[...]'
-                    except:
-                        out += '<could not find suitable string representation>'
-        return out
-
     def log(self, level, msg, *args, **kw):
         """Record a log message in this object's logger. Accepted *args* and
            *kwargs* are the same as :meth:`logging.Logger.log`.
@@ -802,7 +862,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.log(level, msg, *args, **kw)
+        self._logger.getLogObj().log(level, msg, *args, **kw)
 
     def debug(self, msg, *args, **kw):
         """Record a debug message in this object's logger. Accepted *args* and
@@ -812,7 +872,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.debug(msg, *args, **kw)
+        self._logger.getLogObj().debug(msg, *args, **kw)
 
     def info(self, msg, *args, **kw):
         """Record an info message in this object's logger. Accepted *args* and
@@ -822,7 +882,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.info(msg, *args, **kw)
+        self._logger.getLogObj().info(msg, *args, **kw)
 
     def warning(self, msg, *args, **kw):
         """Record a warning message in this object's logger. Accepted *args* and
@@ -832,7 +892,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.warning(msg, *args, **kw)
+        self._logger.getLogObj().warning(msg, *args, **kw)
 
     def deprecated(self, msg=None, dep=None, alt=None, rel=None, dbg_msg=None,
                    _callerinfo=None, **kw):
@@ -867,6 +927,7 @@ class Logger(Object):
         _DEPRECATION_COUNT[msg] += 1
         # limit the output to 1 deprecation message of each type
         from taurus import tauruscustomsettings
+        logger = self._logger.getLogObj()
         _MAX_DEPRECATIONS_LOGGED = getattr(tauruscustomsettings,
                                            '_MAX_DEPRECATIONS_LOGGED', None)
         if _MAX_DEPRECATIONS_LOGGED is not None:
@@ -877,11 +938,11 @@ class Logger(Object):
                 return
 
         if _callerinfo is None:
-            _callerinfo = self.log_obj.findCaller()
+            _callerinfo = logger.findCaller()
         filename, lineno, _ = _callerinfo
         depr_msg = warnings.formatwarning(
             msg, DeprecationWarning, filename, lineno)
-        self.log_obj.warning(depr_msg, **kw)
+        logger.warning(depr_msg, **kw)
         if dbg_msg:
             self.debug(dbg_msg)
             self.stack()
@@ -894,7 +955,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.error(msg, *args, **kw)
+        self._logger.getLogObj().error(msg, *args, **kw)
 
     def fatal(self, msg, *args, **kw):
         """Record a fatal message in this object's logger. Accepted *args* and
@@ -904,7 +965,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.fatal(msg, *args, **kw)
+        self._logger.getLogObj().fatal(msg, *args, **kw)
 
     def critical(self, msg, *args, **kw):
         """Record a critical message in this object's logger. Accepted *args* and
@@ -914,7 +975,7 @@ class Logger(Object):
            :param args: list of arguments
            :param kw: list of keyword arguments
         """
-        self.log_obj.critical(msg, *args, **kw)
+        self._logger.getLogObj().critical(msg, *args, **kw)
 
     def exception(self, msg, *args):
         """Log a message with severity 'ERROR' on the root logger, with
@@ -924,15 +985,17 @@ class Logger(Object):
            :param msg: (str) the message to be recorded
            :param args: list of arguments
         """
-        self.log_obj.exception(msg, *args)
+        self._logger.getLogObj().exception(msg, *args)
 
+    @deprecation_decorator(rel='TEP8')
     def flushOutput(self):
         """Flushes the log output"""
         self.syncLog()
 
+    @deprecation_decorator(rel='TEP8')
     def syncLog(self):
         """Synchronises the log output"""
-        logger = self
+        logger = self._logger
         synced = []
         while logger is not None:
             for handler in logger.log_handlers:
@@ -945,39 +1008,6 @@ class Logger(Object):
                 sync()
                 synced.append(handler)
             logger = logger.getParent()
-
-    def getLogName(self):
-        """Gets the log name for this object
-
-           :return: (str) the log name
-        """
-        return self.log_name
-
-    def getLogFullName(self):
-        """Gets the full log name for this object
-
-           :return: (str) the full log name
-        """
-        return self.log_full_name
-
-    def changeLogName(self, name):
-        """Change the log name for this object.
-
-           :param name: (str) the new log name
-        """
-        self.log_name = name
-        p = self.getParent()
-        if p is not None:
-            self.log_full_name = '%s.%s' % (p.log_full_name, name)
-        else:
-            self.log_full_name = name
-
-        self.log_obj = logging.getLogger(self.log_full_name)
-        for handler in self.log_handlers:
-            self.log_obj.addHandler(handler)
-
-        for child in self.getChildren():
-            child.changeLogName(child.log_name)
 
 
 class LogFilter(logging.Filter):
@@ -993,7 +1023,11 @@ class LogFilter(logging.Filter):
 
 
 def __getrootlogger():
-    return Logger.getLogger("TaurusRootLogger")
+    init_logger = getattr(tauruscustomsettings, \
+            'ENABLE_TAURUS_LOGGER', True)
+    if init_logger:
+        LoggerHelper.initLogger()
+    return logging.getLogger("TaurusRootLogger")
 
 # cannot export log because upper package taurus.core.util imports this 'log'
 # module and it would itself be overwritten by this log function
@@ -1034,27 +1068,6 @@ def critical(msg, *args, **kw):
 def deprecated(*args, **kw):
     kw['_callerinfo'] = __getrootlogger().findCaller()
     return Logger("TaurusRootLogger").deprecated(*args, **kw)
-
-
-def deprecation_decorator(func=None, alt=None, rel=None, dbg_msg=None):
-    """decorator to mark methods as deprecated"""
-    if func is None:
-        return functools.partial(deprecation_decorator, alt=alt, rel=rel,
-                                 dbg_msg=dbg_msg)
-
-    def new_func(*args, **kwargs):
-        deprecated(dep=func.__name__, alt=alt, rel=rel, dbg_msg=dbg_msg)
-        return func(*args, **kwargs)
-
-    doc = (func.__doc__ or '')
-    doc += '\n\n.. deprecated:: %s\n' % (rel or '')
-    if alt:
-        doc += '   Use %s instead\n' % alt
-
-    new_func.__name__ = func.__name__
-    new_func.__doc__ = doc
-    new_func.__dict__.update(func.__dict__)
-    return new_func
 
 
 taurus4_deprecation = functools.partial(deprecation_decorator, rel='4.0')
