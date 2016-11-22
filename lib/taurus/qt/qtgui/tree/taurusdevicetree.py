@@ -277,7 +277,7 @@ class TaurusTreeNodeContainer(object):
         items = self.getSelectedNodes()
         for item in items:
             attr = self.getNodeAlias(item)
-            self.trace('In addToPlot(%s->%s)' % (item.text(0), attr))
+            self.debug('In addToPlot(%s->%s)' % (item.text(0), attr))
             self.addAttrToPlot(attr)
         return
 
@@ -580,7 +580,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
 
     def setModelCheck(self, model):
         # Called from TaurusBaseWidget.setModel()
-        self.trace('setModelCheck(%s)' % str(model)[:80])
+        self.debug('setModelCheck(%s)' % str(model)[:80])
         self.loadTree(model)
 
     @Qt.pyqtSlot('QStringList')
@@ -589,7 +589,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
         :param modelNames:  (sequence<str>) the names of the models to be added
         .. seealso:: :meth:`removeModels`
         '''
-        self.trace('In addModels(%s)' % str(modelNames)[:80])
+        self.debug('In addModels(%s)' % str(modelNames)[:80])
         modelNames = split_model_list(modelNames)
         self.setTree(self.getTangoDict(modelNames), clear=False)
         if isSequence(modelNames):
@@ -609,7 +609,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
         # This method show a list of instances and devices depending on the given servers in QTProperty or in another widget,
         # this method can be used to connect TauDevTree with another widget such as LineEdit.
         #'''
-        #self.trace('In loadTree(%s)'%str(filters))
+        #self.debug('In loadTree(%s)'%str(filters))
         #if clear: self.setWindowTitle('TaurusDevTree:%s'%str(filters))
         # self.setTree(self.getTangoDict(filters),clear=clear,alias=False)
 
@@ -621,7 +621,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
                     filters = dict(filters)
                 except:
                     filters = split_model_list(filters)
-            self.trace('loadTree(%s)' % (filters))
+            self.debug('loadTree(%s)' % (filters))
             assert isMap(filters) or isSequence(
                 filters), "Filters have to be map, string or list type!"
             # self._filters = filters
@@ -655,7 +655,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
         Initializes the tree from a dictionary {'Node0.0':{'Node1.0':None,'Node1.1':None}}
         """
         K = len(str(dict(diction)))
-        self.trace('In setTree(%d) ...' % K)
+        self.debug('In setTree(%d) ...' % K)
         self.debug(diction)
         if diction is None:
             return
@@ -710,7 +710,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def getTangoDict(self, filters):
-        self.trace('In TaurusDevTree.getTangoDict(%s(%s))' %
+        self.debug('In TaurusDevTree.getTangoDict(%s(%s))' %
                    (type(filters), str(filters)[:80]))
         if filters is None:
             return
@@ -735,7 +735,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
                          PyTango.DevULong, PyTango.DevShort, PyTango.DevUShort, PyTango.DevBoolean, PyTango.DevState]
         allow_types = allow_types or [PyTango.DevString] + numeric_types
         dct = {}
-        self.trace('In addAttrToDev(%s)' % my_device)
+        self.debug('In addAttrToDev(%s)' % my_device)
         try:
             proxy = PyTango.DeviceProxy(my_device)
             timeout = proxy.get_timeout_millis()
@@ -767,7 +767,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
     def addAttrToNode(self, node=None, full=False):
         node = node or self.currentItem()
         dev = self.getNodeDeviceName(node)
-        self.trace('In addAttrToNode(%s)' % dev)
+        self.debug('In addAttrToNode(%s)' % dev)
         attrs = self.addAttrToDev(dev)
         children = [str(node.child(i).text(0)).lower()
                     for i in range(node.childCount())]
@@ -788,7 +788,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
                 # it gets all aliases for this device attributes
                 alias = getattr(node, 'AttributeAlias', {})
                 if alias:
-                    self.trace('Got aliases for %s: %s' % (aname, alias))
+                    self.debug('Got aliases for %s: %s' % (aname, alias))
                     [setattr(natt, 'AttributeAlias', v)
                      for k, v in alias.items() if k in aname.lower()]
                 else:
@@ -821,7 +821,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
         """ It returns all nodes matching the given expression. """
         result, regexp = [], str(regexp).lower()
         exclude = exclude or []
-        self.trace('In TauDevTree.getMatchingNodes(%s,%s,%s,%s)' %
+        self.debug('In TauDevTree.getMatchingNodes(%s,%s,%s,%s)' %
                    (regexp, limit, all, exclude))
         if not all:
             node = self.item_index.get(regexp, None)
@@ -939,7 +939,7 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
 
     @Qt.pyqtSlot('QString')
     def findInTree(self, regexp, collapseAll=None, exclude=None, select=True, queue=True):
-        self.trace('In TauTree.findInTree(%s)' % regexp)
+        self.debug('In TauTree.findInTree(%s)' % regexp)
         if collapseAll is None:
             collapseAll = self.collapsing_search
         regexp = str(regexp).lower().strip()
@@ -1106,19 +1106,19 @@ class TaurusDevTree(TaurusTreeNodeContainer, Qt.QTreeWidget, TaurusBaseWidget):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def deviceClicked(self, item, column):
-        self.trace("In TaurusDevTree.deviceClicked(%s)" % item.text(column))
+        self.debug("In TaurusDevTree.deviceClicked(%s)" % item.text(column))
         self.deviceSelected(self.getNodeDeviceName())
 
     def deviceSelected(self, device_name=''):
         '''QSIGNAL: this method is used to emit deviceSelected(QString) signal'''
-        self.trace("In TaurusDevTree.deviceSelected(%s)" % device_name)
+        self.debug("In TaurusDevTree.deviceSelected(%s)" % device_name)
         try:
             #item = self.currentItem()
             device_name = device_name or self.getNodeDeviceName()  # item.text(0)
             if str(device_name).count('/') != 2:
                 return
             # Signal
-            self.trace('TaurusTree emit deviceSelected(%s) signal ...' %
+            self.debug('TaurusTree emit deviceSelected(%s) signal ...' %
                        device_name)
             self.deviceSelected.emit(Qt.QString(device_name))
         except:
@@ -1516,7 +1516,7 @@ class ServerBrowser(TaurusDevTree):
         --- filters is a string with names of devices/servers such as "LT/VC/ALL,LT02/VC/IP-01" or "modbus,pyplc"
         --- filters is a list of devices such as ["LT/VC/ALL","LT02/VC/IP-01"]
         '''
-        self.trace('In TaurusDevTree.buildDictFromFilters(%s)' % filters)
+        self.debug('In TaurusDevTree.buildDictFromFilters(%s)' % filters)
         self._filters = filters
         # @TODO:QString and QStringList should not be used (They disappear in API2)
         if type(filters) == type("") or isinstance(filters, Qt.QString):
@@ -1554,7 +1554,7 @@ class ServerBrowser(TaurusDevTree):
                 if re.match(exp, t.lower()):
                     self.debug('Adding node %s' % t)
                     vals[t] = addMe(t)
-        self.trace('Out of TaurusDevTree.getDeviceDict(%s)' % filters)
+        self.debug('Out of TaurusDevTree.getDeviceDict(%s)' % filters)
         return vals
 
     def addInstToServ(self, my_server):

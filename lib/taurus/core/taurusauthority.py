@@ -45,7 +45,7 @@ class TaurusAuthority(TaurusModel):
     # TaurusModel implementation
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     def cleanUp(self):
-        self.trace("[TaurusAuthority] cleanUp")
+        self.debug("[TaurusAuthority] cleanUp")
         TaurusModel.cleanUp(self)
 
     @classmethod

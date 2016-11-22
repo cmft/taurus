@@ -76,7 +76,7 @@ class TaurusAttribute(TaurusModel):
         self._warning = [None, None]
 
     def cleanUp(self):
-        self.trace("[TaurusAttribute] cleanUp")
+        self.debug("[TaurusAttribute] cleanUp")
         self._unsubscribeEvents()
         TaurusModel.cleanUp(self)
 

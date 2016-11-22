@@ -289,7 +289,7 @@ class EvaluationAttribute(TaurusAttribute):
         try:
             v = evt_value.rvalue
         except AttributeError:
-            self.trace('Ignoring event from %s' % repr(evt_src))
+            self.debug('Ignoring event from %s' % repr(evt_src))
             return
         # update the corresponding value
         evaluator = self.getParentObj()

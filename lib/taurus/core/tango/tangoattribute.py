@@ -292,7 +292,7 @@ class TangoAttribute(TaurusAttribute):
         self._subscribeConfEvents()
 
     def cleanUp(self):
-        self.trace("[TangoAttribute] cleanUp")
+        self.debug("[TangoAttribute] cleanUp")
         self._unsubscribeConfEvents()
         TaurusAttribute.cleanUp(self)
         self.__dev_hw_obj = None
@@ -625,7 +625,7 @@ class TangoAttribute(TaurusAttribute):
         # so we should not access external objects from the factory, like the
         # parent object
         if self.__dev_hw_obj is not None and self.__chg_evt_id is not None:
-            self.trace("Unsubscribing to change events (ID=%d)",
+            self.debug("Unsubscribing to change events (ID=%d)",
                        self.__chg_evt_id)
             try:
                 self.__dev_hw_obj.unsubscribe_event(self.__chg_evt_id)
@@ -637,13 +637,13 @@ class TangoAttribute(TaurusAttribute):
                     pass
                 else:
                     self.debug("Failed: %s", df[0].desc)
-                    self.trace(str(df))
+                    self.debug(str(df))
         self._deactivatePolling()
         self.__subscription_state = SubscriptionState.Unsubscribed
 
     def _subscribeConfEvents(self):
         """ Enable subscription to the attribute configuration events."""
-        self.trace("Subscribing to configuration events...")
+        self.debug("Subscribing to configuration events...")
         if self.__dev_hw_obj is None:
             dev = self.getParentObj()
             if dev is None:

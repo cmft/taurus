@@ -302,7 +302,7 @@ class TaurusDevicePanel(TaurusWidget):
         if model:
             model = model and model.split()[0] or ''
             modelclass = taurus.Factory().findObjectClass(model)
-        self.trace('In TaurusDevicePanel.setModel(%s(%s),%s)' %
+        self.debug('In TaurusDevicePanel.setModel(%s(%s),%s)' %
                    (raw, modelclass, pixmap))
         if model == self.getModel():
             return
@@ -389,7 +389,7 @@ class TaurusDevicePanel(TaurusWidget):
         return
 
     def detach(self):
-        self.trace('In TaurusDevicePanel(%s).detach()' % self.getModel())
+        self.debug('In TaurusDevicePanel(%s).detach()' % self.getModel())
         _detached = []
         # long imports to avoid comparison problems in the isinstance below
         import taurus.qt.qtgui.container
@@ -424,7 +424,7 @@ class TaurusDevicePanel(TaurusWidget):
     def get_attrs_form(self, device, form=None, filters=None, parent=None):
         filters = filters or get_regexp_dict(
             TaurusDevicePanel._attribute_filter, device, ['.*'])
-        self.trace('In TaurusDevicePanel.get_attrs_form(%s,%s)' %
+        self.debug('In TaurusDevicePanel.get_attrs_form(%s,%s)' %
                    (device, filters))
         allattrs = sorted(str(a) for a in taurus.Device(
             device).get_attribute_list() if str(a).lower() not in ('state', 'status'))
@@ -436,7 +436,7 @@ class TaurusDevicePanel(TaurusWidget):
                     if aname not in attrs:
                         attrs.append(aname)
         if attrs:
-            #self.trace( 'Matching attributes are: %s' % str(attrs)[:100])
+            #self.debug( 'Matching attributes are: %s' % str(attrs)[:100])
             if form is None:
                 form = TaurusForm(parent)
             elif hasattr(form, 'setModel'):
@@ -454,7 +454,7 @@ class TaurusDevicePanel(TaurusWidget):
             return None
 
     def get_comms_form(self, device, form=None, parent=None):
-        self.trace('In TaurusDevicePanel.get_comms_form(%s)' % device)
+        self.debug('In TaurusDevicePanel.get_comms_form(%s)' % device)
         params = get_regexp_dict(TaurusDevicePanel._command_filter, device, [])
         # If filters are defined only listed devices will show commands
         if TaurusDevicePanel._command_filter and not params:

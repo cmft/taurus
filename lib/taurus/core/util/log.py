@@ -77,6 +77,7 @@ class _DeprecationCounter(defaultdict):
 _DEPRECATION_COUNT = _DeprecationCounter()
 # ------------------------------------------------------------------------------
 
+# TODO: TRACE level is deprecated avoid to use.
 TRACE = 5
 logging.addLevelName(TRACE, "TRACE")
 

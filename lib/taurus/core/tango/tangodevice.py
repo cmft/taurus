@@ -185,7 +185,7 @@ class TangoDevice(TaurusDevice):
         return ret
 
     def cleanUp(self):
-        self.trace("[TangoDevice] cleanUp")
+        self.debug("[TangoDevice] cleanUp")
         self._descr = None
 
         if not self._deviceStateObj is None:
