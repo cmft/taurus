@@ -714,7 +714,7 @@ class LoggerHelper(object):
         if not self.log_children.get(id(child)):
             self.log_children[id(child)]=weakref.ref(child)
 
-    def changeLogName(self,name):
+    def changeLogName(self, name):
         """Change the log name for this object.
 
            :param name: (str) the new log name
@@ -806,10 +806,11 @@ class Logger(Object):
     def getTaurusLogger(self):
         return self._logger
 
-    # @classmethod
-    # def getLogger(cls, name=None):
-    #     cls.initRoot()
-    #     return cls._getLogger(name=name)
+    def setParent(self, parent):
+        self._logger.setParent(parent)
+
+    def getParent(self):
+        return self._logger.getParent()
 
     @deprecation_decorator(alt="debug")
     def trace(self, msg, *args, **kw):
@@ -840,7 +841,7 @@ class Logger(Object):
         return out
 
     def _format_trace(self):
-        return self._format_stack(inspect.trace)
+        return self._logger._format_stack(inspect.trace)
 
     def stack(self, target=LoggerHelper.Trace):
         """Log the usual stack information, followed by a listing of all the
@@ -850,7 +851,7 @@ class Logger(Object):
 
            :return: (str) The stack string representation
         """
-        out = self._format_stack()
+        out = self._logger._format_stack()
         self.log_obj.log(target, out)
         return out
 
