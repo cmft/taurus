@@ -33,7 +33,7 @@ from collections import Iterable
 
 import taurus
 from taurus.external.qt import Qt
-from taurus.core.util.log import Logger
+from taurus.core.util.log import Logger, LoggerHelper
 from taurus.core.util.singleton import Singleton
 
 
@@ -301,7 +301,7 @@ class SingletonWorker():  # Qt.QObject):
     """
     _thread = None
 
-    def __init__(self, parent=None, name='', queue=None, method=None, cursor=None, sleep=5000, log=Logger.Warning, start=True):
+    def __init__(self, parent=None, name='', queue=None, method=None, cursor=None, sleep=5000, log=LoggerHelper.Warning, start=True):
         self.name = name
         self.log = Logger('SingletonWorker(%s)' % self.name)
         self.log.setLogLevel(log)
