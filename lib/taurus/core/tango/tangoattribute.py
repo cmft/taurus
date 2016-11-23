@@ -680,14 +680,14 @@ class TangoAttribute(TaurusAttribute):
         # so we should not access external objects from the factory, like the
         # parent object
         if self.__cfg_evt_id and not self.__dev_hw_obj is None:
-            self.trace("Unsubscribing to configuration events (ID=%s)",
+            self.debug("Unsubscribing to configuration events (ID=%s)",
                        str(self.__cfg_evt_id))
             try:
                 self.__dev_hw_obj.unsubscribe_event(self.__cfg_evt_id)
                 self.__cfg_evt_id = None
             except PyTango.DevFailed, e:
                 self.debug("Error trying to unsubscribe configuration events")
-                self.trace(str(e))
+                self.debug(str(e))
 
     def push_event(self, event):
         """Method invoked by the PyTango layer when a change event occurs.
