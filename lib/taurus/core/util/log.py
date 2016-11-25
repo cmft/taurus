@@ -1054,9 +1054,15 @@ class Logger(Object):
     def getLogObj(self):
         return self._logger.getLogObj()
 
+    @property
     @deprecation_decorator(rel="tep8", alt="getTaurusLogger()")
-    def __getattr__(self, item):
-        return getattr(self._logger, item)
+    def log_obj(self):
+        return self._logger.log_obj
+
+    @property
+    @deprecation_decorator(rel="tep8", alt="getTaurusLogger()")
+    def log_handlers(self):
+        return self._logger.log_handlers
 
 
 class LogFilter(logging.Filter):
