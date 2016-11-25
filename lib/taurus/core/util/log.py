@@ -765,10 +765,20 @@ class LoggerHelper(object):
         return self.getLogName()
 
 
+
 class Logger(Object):
     """The taurus logger class. All taurus pertinent classes should inherit
     directly or indirectly from this class if they need taurus logging
     facilities."""
+
+    # TODO: For back. comp. Delete it when sardana does not need it.
+    Critical = logging.CRITICAL
+    Fatal = logging.FATAL
+    Error = logging.ERROR
+    Warning = logging.WARNING
+    Info = logging.INFO
+    Debug = logging.DEBUG
+    Trace = logging.DEBUG
 
     def __init__(self, name='', parent=None, format=None):
         """The Logger constructor
@@ -811,17 +821,6 @@ class Logger(Object):
 
     def getParent(self):
         return self._logger.getParent()
-
-    @deprecation_decorator(alt="debug")
-    def trace(self, msg, *args, **kw):
-        """Record a trace message in this object's logger. Accepted *args* and
-           *kwargs* are the same as :meth:`logging.Logger.log`.
-
-           :param msg: (str) the message to be recorded
-           :param args: list of arguments
-           :param kw: list of keyword arguments
-        """
-        self.debug(msg, *args, **kw)
 
     def traceback(self, level=LoggerHelper.Trace, extended=True):
         """Log the usual traceback information, followed by a listing of all the
@@ -1010,6 +1009,54 @@ class Logger(Object):
                 sync()
                 synced.append(handler)
             logger = logger.getParent()
+
+    @classmethod
+    @deprecation_decorator(rel="tep8")
+    def getRootLog(cls):
+        LoggerHelper.initLogger()
+        return logging.getLogger()
+
+    @classmethod
+    @deprecation_decorator(rel="tep8", alt="logging")
+    def getLogger(cls, name=None):
+        orig_logger_class = logging.getLoggerClass()
+        try:
+            logging.setLoggerClass(_Logger)
+            ret = logging.getLogger(name)
+            return ret
+        finally:
+            logging.setLoggerClass(orig_logger_class)
+
+    @classmethod
+    @deprecation_decorator(rel="tep8", alt="LoggerHelper.addLevelName")
+    def addLevelName(cls, level_no, level_name):
+        print "addedLevel", level_name
+        name = level_name[0] + level_name[1:].lower()
+        setattr(Logger, name, level_no)
+        LoggerHelper.addLevelName(level_no, level_name)
+
+    @deprecation_decorator(rel="tep8", alt="getTaurusLogger().addLogHandler")
+    def addLogHandler(self, handler):
+        self._logger.addLogHandler(handler)
+
+    @deprecation_decorator(rel="tep8", alt="debug")
+    def trace(self, msg, *args, **kw):
+        """Record a trace message in this object's logger. Accepted *args* and
+           *kwargs* are the same as :meth:`logging.Logger.log`.
+
+           :param msg: (str) the message to be recorded
+           :param args: list of arguments
+           :param kw: list of keyword arguments
+        """
+        self.debug(msg, *args, **kw)
+
+    @deprecation_decorator(rel="tep8", alt="getTaurusLogger().getLogObj")
+    def getLogObj(self):
+        return self._logger.getLogObj()
+
+    @deprecation_decorator(rel="tep8", alt="getTaurusLogger()")
+    def __getattr__(self, item):
+        return getattr(self._logger, item)
 
 
 class LogFilter(logging.Filter):
