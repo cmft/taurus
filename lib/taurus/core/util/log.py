@@ -1030,7 +1030,6 @@ class Logger(Object):
     @classmethod
     @deprecation_decorator(rel="tep8", alt="LoggerHelper.addLevelName")
     def addLevelName(cls, level_no, level_name):
-        print "addedLevel", level_name
         name = level_name[0] + level_name[1:].lower()
         setattr(Logger, name, level_no)
         LoggerHelper.addLevelName(level_no, level_name)
