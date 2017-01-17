@@ -426,6 +426,7 @@ class TangoSchemeTest(Device):
 
     def init_device(self):
         # To setUp the state
+        self.set_state(DevState.INIT)
         Device.init_device(self)
         self.set_state(DevState.ON)
 
@@ -436,6 +437,7 @@ class TangoSchemeTest(Device):
         # Reset the attributes configuration
         # TODO there is a bug in self.set_attribute_config_3(),
         # so is not possible to use the PyTango.Device API
+        self.set_state(DevState.INIT)
         dev = DeviceProxy(self.get_name())
         attr_list = list(dev.get_attribute_list())
         for attr in attr_list:
@@ -493,6 +495,7 @@ class TangoSchemeTest(Device):
         self._string_image = v
         v = [[self.default_rvalue['uchar']] * self.DIMX] * self.DIMY
         self._uchar_image = v
+        self.set_state(DevState.ON)
 
 
 if __name__ == "__main__":
