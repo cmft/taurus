@@ -114,7 +114,7 @@ class Starter(object):
                 ##############################################################
                 # Workaround to avoid race conditions
                 # TODO: Find root cause of race condition and fix
-                time.sleep(3)  # TODO: Use an env var instead of a hardcoded val
+                time.sleep(5)  # TODO: Use an env var instead of a hardcoded val
                 ##############################################################
                 return
             else:
