@@ -73,8 +73,8 @@ class BaseWidgetTestCase(object):
             self._widget = self._klass(*self.initargs, **self.initkwargs)
         # ----------------------------
         # workaround for https://sourceforge.net/p/tauruslib/tickets/334/
-        import time
-        time.sleep(self._BUG_334_WORKAROUND_TIME)
+        # import time
+        # time.sleep(self._BUG_334_WORKAROUND_TIME)
         # ----------------------------
 
     def assertMaxDeprecations(self, maximum, msg=None):
