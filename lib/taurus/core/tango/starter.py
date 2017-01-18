@@ -109,7 +109,7 @@ class Starter(object):
         for i in range(wait_seconds):
             _log.debug('Waiting for server %s to get started... %d' %
                        (self.ds_name, i))
-            if self.isRunning():
+            if self.isRunning() and self.isOn():
                 _log.info('Server %s has been started' % self.ds_name)
                 ##############################################################
                 # TODO: this workaround doesn't seem necessary (see isRunning)
@@ -188,6 +188,14 @@ class Starter(object):
         except PyTango.DevFailed:
             return False
         return True
+
+    def isOn(self):
+        if self.dserver is None:
+            return False
+        try:
+            return self.dserver.state() == PyTango.DevState.ON
+        except:
+            return False
 
 
 class ProcessStarter(Starter):
