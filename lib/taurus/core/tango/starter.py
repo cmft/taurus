@@ -113,7 +113,7 @@ class Starter(object):
                 _log.info('Server %s has been started' % self.ds_name)
                 ##############################################################
                 # TODO: this workaround doesn't seem necessary (see isRunning)
-                # time.sleep(3)
+                time.sleep(3)
                 ##############################################################
                 return
             else:
