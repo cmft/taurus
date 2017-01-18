@@ -96,8 +96,8 @@ class GetDisplayValueTestCase(TangoSchemeTestLauncher, BaseWidgetTestCase,
         self._widget.setModel(model)
         # ----------------------------
         # workaround for https://sourceforge.net/p/tauruslib/tickets/334/
-        # import time
-        # time.sleep(BaseWidgetTestCase._BUG_334_WORKAROUND_TIME)
+        import time
+        time.sleep(BaseWidgetTestCase._BUG_334_WORKAROUND_TIME)
         # ----------------------------
         got = self._widget.getDisplayValue()
         msg = ('getDisplayValue for "%s" should be %r (got %r)' %
