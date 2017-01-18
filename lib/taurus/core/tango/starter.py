@@ -112,8 +112,9 @@ class Starter(object):
             if self.isRunning():
                 _log.info('Server %s has been started' % self.ds_name)
                 ##############################################################
-                # TODO: this workaround doesn't seem necessary (see isRunning)
-                # time.sleep(3)
+                # Workaround to avoid race conditions
+                # TODO: Find root cause of race condition and fix
+                time.sleep(3)  # TODO: Use an env var instead of a hardcoded val
                 ##############################################################
                 return
             else:
