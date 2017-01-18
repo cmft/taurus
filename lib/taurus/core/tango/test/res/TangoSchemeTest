@@ -496,6 +496,7 @@ class TangoSchemeTest(Device):
     def init_device(self):
         Device.init_device(self)
         self.Reset()
+        # set state to ON
         self.set_state(DevState.ON)
 
 if __name__ == "__main__":
