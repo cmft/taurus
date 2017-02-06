@@ -37,6 +37,7 @@ import numpy
 from taurus.external.qt import Qt, Qwt5
 
 import taurus
+from taurus import tauruscustomsettings
 import taurus.core
 from taurus.core.taurusmanager import getSchemeFromName
 from taurus.core.taurusbasetypes import DataFormat
@@ -3703,7 +3704,9 @@ def main():
     # show the widget
     w.show()
     # if no models are passed, show the data import dialog
-    if len(models) == 0 and options.config_file is None:
+    default_scheme = getattr(tauruscustomsettings, "DEFAULT_SCHEME", "None")
+    if len(models) == 0 and options.config_file is None \
+            and default_scheme == "tango":
         w.showDataImportDlg()
 
     sys.exit(app.exec_())
