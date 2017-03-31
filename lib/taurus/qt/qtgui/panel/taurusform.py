@@ -232,7 +232,7 @@ class TaurusForm(TaurusWidget):
 
     def chooseAttrs(self):
         self.info(
-            'TaurusForm.chooseAttrs() ahs been deprecated. Use TaurusForm.chooseModels() instead')
+            'TaurusForm.chooseAttrs() has been deprecated. Use TaurusForm.chooseModels() instead')
         self.chooseModels()
 
     def sizeHint(self):
