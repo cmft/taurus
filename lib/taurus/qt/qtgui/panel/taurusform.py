@@ -36,6 +36,7 @@ import PyTango
 
 import taurus.core
 from taurus.core import TaurusDevState
+from taurus import tauruscustomsettings
 
 from taurus.qt.qtcore.mimetypes import (TAURUS_ATTR_MIME_TYPE, TAURUS_DEV_MIME_TYPE,
                                         TAURUS_MODEL_LIST_MIME_TYPE, TAURUS_MODEL_MIME_TYPE)
@@ -195,6 +196,9 @@ class TaurusForm(TaurusWidget):
 
     def chooseModels(self):
         '''launches a model chooser dialog to modify the contents of the form'''
+        default_scheme = getattr(tauruscustomsettings, "DEFAULT_SCHEME", "None")
+        if default_scheme is not "tango":
+            return
         if self.__modelChooserDlg is None:
             self.__modelChooserDlg = Qt.QDialog(self)
             self.__modelChooserDlg.setWindowTitle(
