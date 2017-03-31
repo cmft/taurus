@@ -41,6 +41,7 @@ import taurus.core
 from taurus.core.taurusmanager import getSchemeFromName
 from taurus.core.taurusbasetypes import DataFormat
 # TODO: Tango-centric
+from taurus import tauruscustomsettings
 from taurus.core.util.containers import LoopList, CaselessDict, CaselessList
 from taurus.core.util.safeeval import SafeEvaluator
 from taurus.qt.qtcore.util.signal import baseSignal
@@ -2780,6 +2781,10 @@ class TaurusPlot(Qwt5.QwtPlot, TaurusBaseWidget):
         :class:`TaurusModelChooser`) and also to generate raw data or import it
         from files
         '''
+        # It is tango-centric; Check if the default scheme is tango before launching the TaurusModelChooser
+        default_scheme = getattr(tauruscustomsettings, "DEFAULT_SCHEME", "None")
+        if default_scheme is not "tango":
+            return
         if self.DataImportDlg is None:
             from taurus.qt.qtgui.panel import TaurusModelChooser
             self.DataImportDlg = Qt.QDialog(self)
