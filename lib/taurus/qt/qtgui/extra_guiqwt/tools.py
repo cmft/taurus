@@ -39,7 +39,7 @@ from taurus.qt.qtgui.extra_guiqwt.curve import TaurusCurveItem, TaurusTrendItem
 from taurus.qt.qtgui.extra_guiqwt.image import TaurusTrend2DItem
 from taurus.qt.qtgui.extra_guiqwt.curvesmodel import CurveItemConfDlg
 from taurus.qt.qtgui.panel import TaurusModelChooser
-from taurus.qt.qtgui.plot import DateTimeScaleEngine
+from taurus.qt.qtgui.extra_guiqwt.scales import DateTimeScaleEngine
 
 
 class TaurusCurveChooserTool(CommandTool):
@@ -244,7 +244,10 @@ class AutoScrollTool(ToggleTool, BaseConfigurableClass):
             if checked:
                 item.scrollRequested.connect(self.onScrollRequested)
             else:
-                item.scrollRequested.disconnect(self.onScrollRequested)
+                try:
+                    item.scrollRequested.disconnect(self.onScrollRequested)
+                except:
+                    pass
 
     def getScrollItems(self, plot):
         return [item for item in plot.get_items()

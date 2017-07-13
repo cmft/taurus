@@ -49,8 +49,6 @@ class BaseWidgetTestCase(object):
     initargs = []
     initkwargs = {}
 
-    _BUG_334_WORKAROUND_TIME = 1  # TODO: remove this when proper fix is done
-
     def setUp(self):
         """
         Preconditions:
@@ -72,11 +70,6 @@ class BaseWidgetTestCase(object):
 
         if self._klass is not None:
             self._widget = self._klass(*self.initargs, **self.initkwargs)
-        # ----------------------------
-        # workaround for https://sourceforge.net/p/tauruslib/tickets/334/
-        # import time
-        # time.sleep(self._BUG_334_WORKAROUND_TIME)
-        # ----------------------------
 
     def assertMaxDeprecations(self, maximum, msg=None):
         """Assertion method that checks that the number of deprecations issued

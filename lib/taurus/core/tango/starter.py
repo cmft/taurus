@@ -114,7 +114,10 @@ class Starter(object):
                 ##############################################################
                 # Workaround to avoid race conditions
                 # TODO: Find root cause of race condition and fix
-                time.sleep(5)  # TODO: Use an env var instead of a hardcoded val
+                _wait = float(os.environ.get('TAURUS_STARTER_WAIT', 0))
+                if _wait:
+                    _log.info('Waiting %g s after start' % _wait)
+                    time.sleep(_wait)
                 ##############################################################
                 return
             else:
