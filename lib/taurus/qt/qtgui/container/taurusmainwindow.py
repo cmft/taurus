@@ -35,6 +35,7 @@ import os
 import sys
 
 from taurus import tauruscustomsettings
+from taurus.core.util import taurus4_deprecation
 from taurus.external.qt import Qt
 from taurusbasecontainer import TaurusBaseContainer
 
@@ -875,6 +876,8 @@ class TaurusMainWindow(Qt.QMainWindow, TaurusBaseContainer):
         self.unregisterConfigurableItem("_extApp[%s]" % str(action.text()),
                                         raiseOnError=False)
 
+    @taurus4_deprecation(dbg_msg="Change Tango Host action is TangoCentric",
+                         rel="4.1.1")
     def _onChangeTangoHostAction(self):
         '''
         slot called when the Change Tango Host is triggered. It prompts for a
