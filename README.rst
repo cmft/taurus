@@ -27,6 +27,10 @@
     :target: https://ci.appveyor.com/project/taurusorg/taurus/branch/develop
     :alt: Appveyor
 
+.. image:: https://coveralls.io/repos/github/cmft/taurus/badge.svg?branch=develop
+    :target: https://coveralls.io/github/cmft/taurus?branch=develop
+    :alt: Coveralls
+
 
 Taurus
 ========
