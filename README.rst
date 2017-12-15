@@ -36,5 +36,3 @@ Taurus is a control and data acquisition python module
 Main web site: http://taurus-scada.org
 
 
-[![Coverage Status](https://coveralls.io/repos/github/cmft/taurus/badge.svg?branch=develop)](https://coveralls.io/github/cmft/taurus?branch=develop)
-
