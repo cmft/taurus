@@ -52,6 +52,7 @@ For a full log of commits since Jul16, run (in your git repo):
 - Exception when creating non-exported tango devices (#262)
 - Bug causing random failures in the test suite(#261)
 - Documentation issues(#351, #350, #349)
+- test
 
 ### Removed
 - `TaurusBaseEditor2` class
