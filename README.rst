@@ -27,6 +27,9 @@
     :target: https://ci.appveyor.com/project/taurusorg/taurus/branch/develop
     :alt: Appveyor
 
+.. image:: https://coveralls.io/repos/github/cmft/taurus/badge.svg?branch=develop
+    :target: https://coveralls.io/github/cmft/taurus?branch=develop
+
 
 Taurus
 ========
@@ -34,5 +37,8 @@ Taurus
 Taurus is a control and data acquisition python module
 
 Main web site: http://taurus-scada.org
+
+
+
 
 
