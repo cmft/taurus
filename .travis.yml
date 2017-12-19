@@ -47,3 +47,6 @@ doctr:
   require-master: false
   sync: true
   built-docs: build/sphinx/html/
+
+after_success:
+  - coveralls
