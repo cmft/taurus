@@ -28,11 +28,12 @@ This module provides a set of basic taurus widgets based on QLineEdit
 """
 
 import sys
+import enum
 import numpy
 from taurus.external.qt import Qt
 from taurus.core.units import Quantity
 from taurus.qt.qtgui.base import TaurusBaseWritableWidget
-from taurus.qt.qtgui.util import PintValidator
+from taurus.qt.qtgui.util import PintValidator, EnumValidator
 from taurus.core import DataType, DataFormat, TaurusEventType
 
 __all__ = ["TaurusValueLineEdit"]
@@ -74,6 +75,13 @@ class TaurusValueLineEdit(Qt.QLineEdit, TaurusBaseWritableWidget):
             units = value.wvalue.units
             if units != val.units:
                 val.setUnits(units)
+        elif isinstance(value.wvalue, enum.IntEnum):
+            if not isinstance(value, EnumValidator):
+                val = EnumValidator(self)
+                self.setValidator(val)
+            attr = self.getModelObj()
+            val = self.validator()
+            val.members = attr.getEnumMembers()
 
         # @TODO Other validators can be configured for other types
         #       (e.g. with string lengths, tango names,...)
@@ -136,6 +144,7 @@ class TaurusValueLineEdit(Qt.QLineEdit, TaurusBaseWritableWidget):
         val = self.validator()
         if val is None:
             return True
+
         return val.validate(str(self.text()), 0)[0] == val.Acceptable
 
     def updateStyle(self):
@@ -262,6 +271,8 @@ class TaurusValueLineEdit(Qt.QLineEdit, TaurusBaseWritableWidget):
                     return numpy.array(eval(text), dtype=str).tolist()
             elif model_type == DataType.Bytes:
                 return bytes(text)
+            elif model_type == DataType.Enum:
+                return text
             else:
                 raise TypeError('Unsupported model type "%s"' % model_type)
         except Exception as e:

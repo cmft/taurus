@@ -2069,7 +2069,13 @@ class TaurusBaseWritableWidget(TaurusBaseWidget):
         model = self.getModelObj()
         try:
             model_value = model.getValueObj().wvalue
-            wigdet_value = self.getValue()
+            from taurus.core.taurusbasetypes import DataType
+            if model.getType() == DataType.Enum:
+                value = self.getValue()
+                wigdet_value = int(model.getEnumMembers().get(value, value))
+            else:
+                wigdet_value = self.getValue()
+
             if model.areStrValuesEqual(model_value, wigdet_value):
                 self._operations = []
             else:
