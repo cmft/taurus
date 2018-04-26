@@ -68,6 +68,7 @@ FROM_TANGO_TO_TAURUS_TYPE = {PyTango.CmdArgType.DevVoid: None,
                              PyTango.CmdArgType.DevVarULong64Array: DataType.Integer,
                              PyTango.CmdArgType.DevInt: DataType.Integer,
                              PyTango.CmdArgType.DevEncoded: DataType.DevEncoded,
+                             PyTango.CmdArgType.DevEnum: DataType.Enum,
                              }
 
 if hasattr(PyTango, "str_2_obj"):

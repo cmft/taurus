@@ -176,6 +176,14 @@ class TaurusAttribute(TaurusModel):
         except:
             return False
 
+    def getEnumMembers(self):
+        ''' Method to return the enum members.
+        The reimplementation of this method is mandatory
+        if the scheme accept Enum types.
+        :return: An orderedDict
+        '''
+        return {}
+
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # API for listeners
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-

@@ -32,6 +32,7 @@ __docformat__ = "restructuredtext"
 # -*- coding: utf-8 -*-
 import re
 import time
+import enum
 import threading
 import weakref
 import PyTango
@@ -127,6 +128,17 @@ class TangoAttrValue(TaurusAttrValue):
                 wvalue = Quantity(wvalue, units=units)
         elif isinstance(rvalue, PyTango._PyTango.DevState):
             rvalue = DevState[str(rvalue)]
+
+        elif isinstance(rvalue, PyTango._PyTango.DevState):
+            rvalue = DevState[str(rvalue)]
+
+        if p.type is PyTango._PyTango.DevEnum:
+            enum_members = self._attrRef.getEnumMembers()
+            idrv = int(enum_members.get(rvalue, rvalue))
+            idwv = int(enum_members.get(wvalue, wvalue))
+            rvalue = enum_members.values()[idrv]
+            wvalue = enum_members.values()[idwv]
+
 
         self.rvalue = rvalue
         self.wvalue = wvalue
@@ -249,6 +261,7 @@ class TangoAttribute(TaurusAttribute):
     _description = 'A Tango Attribute'
 
     def __init__(self, name, parent, **kwargs):
+        self._ta_enum = None
         # the last attribute value
         self.__attr_value = None
 
@@ -389,6 +402,9 @@ class TangoAttribute(TaurusAttribute):
             elif tgtype in (PyTango.CmdArgType.DevState,
                             PyTango.CmdArgType.DevEncoded):
                 attrvalue = magnitude
+            elif tgtype == PyTango.CmdArgType.DevEnum:
+                attrvalue = int(self.getEnumMembers().get(magnitude,
+                                                          magnitude)) - 1
             else:
                 attrvalue = str(magnitude)
         elif fmt in (DataFormat._1D, DataFormat._2D):
@@ -409,6 +425,11 @@ class TangoAttribute(TaurusAttribute):
         if self._pytango_attrinfoex is None:
             self.getAttributeInfoEx(cache=False)
             self._decodeAttrInfoEx()
+        if self.getType() is DataType.Enum and \
+                        self._ta_enum is None:
+            enum_labels = list(self._pytango_attrinfoex.enum_labels)
+            self._ta_enum = enum.IntEnum('ta_enums', enum_labels)
+
         value = TangoAttrValue(pytango_dev_attr=attr_value, attr=self)
         return value
 
@@ -880,6 +901,14 @@ class TangoAttribute(TaurusAttribute):
 
     def getLabel(self, cache=True):
         return self._label
+
+    def getEnumMembers(self):
+        '''Reimplementation to manage PyTango.DevEnum attributes'''
+        members = {}
+        if self._ta_enum:
+            members = self._ta_enum.__members__
+
+        return members
 
     def getRange(self, cache=True):
         return self._range
