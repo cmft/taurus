@@ -143,7 +143,8 @@ DataType = Enumeration(
         'Bytes',
         'DevState',  # This type is for Tango backwards-compat. Avoid using it
         'DevEncoded',  # This type is for Tango backwards-compat. Avoid using it
-        'Object'  # use this for opaque py objects not described by any of the above
+        'Object',  # use this for opaque py objects not described by any of the above
+        'Enum' # Can be used in scheme-agnostic code
     ))
 # monkey-patch DataType to provide from_python_type()
 __PYTHON_TYPE_TO_TAURUS_DATATYPE = {
@@ -152,6 +153,7 @@ __PYTHON_TYPE_TO_TAURUS_DATATYPE = {
     long: DataType.Integer,
     float: DataType.Float,
     bool: DataType.Boolean,
+    IntEnum: DataType.Enum
     # bytes : DataType.Bytes, # see below...
 }
 if str is not bytes:  # Python >=3
