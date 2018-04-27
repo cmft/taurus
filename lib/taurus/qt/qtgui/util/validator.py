@@ -21,11 +21,12 @@
 ##
 #############################################################################
 
-__all__ = ["PintValidator"]
+__all__ = ["PintValidator", "EnumValidator"]
 
 from taurus.external.qt import Qt
 from taurus.core.units import Quantity, UR
 from pint import DimensionalityError
+from enum import IntEnum
 
 
 class PintValidator(Qt.QValidator):
@@ -110,6 +111,33 @@ class PintValidator(Qt.QValidator):
             if self.top is not None and q > self.top:
                 return Qt.QValidator.Intermediate, input, pos
         except DimensionalityError:
+            return Qt.QValidator.Intermediate, input, pos
+        return Qt.QValidator.Acceptable, input, pos
+
+    def _validate_oldQt(self, input, pos):
+        """Old Qt (v4.4.) -compatible implementation of validate"""
+        state, _, pos = self._validate(input, pos)
+        return state, pos
+
+    # select the appropriate implementation of validate. See:
+    # https://www.mail-archive.com/pyqt@riverbankcomputing.com/msg26344.html
+    validate = Qt.PYQT_QSTRING_API_1 and _validate_oldQt or _validate
+
+
+class EnumValidator(Qt.QValidator):
+    """A QValidator for IntEnum"""
+    members = None
+
+    def _validate(self, input, pos):
+        """Reimplemented from :class:`QValidator` to validate if the input
+        string is a representation of a IntEnum
+        """
+        try:
+            value = int(self.members.get(input, input))
+            values = self.members.values()
+            if value < min(values) or value > max(values):
+                return Qt.QValidator.Intermediate, input, pos
+        except:
             return Qt.QValidator.Intermediate, input, pos
         return Qt.QValidator.Acceptable, input, pos
 
