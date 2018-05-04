@@ -135,10 +135,10 @@ class TangoAttrValue(TaurusAttrValue):
         if p.type is PyTango._PyTango.DevEnum:
             enum_members = self._attrRef.getEnumMembers()
             idrv = int(enum_members.get(rvalue, rvalue))
-            idwv = int(enum_members.get(wvalue, wvalue))
             rvalue = enum_members.values()[idrv]
-            wvalue = enum_members.values()[idwv]
-
+            if wvalue is not None:
+                idwv = int(enum_members.get(wvalue, wvalue))
+                wvalue = enum_members.values()[idwv]
 
         self.rvalue = rvalue
         self.wvalue = wvalue
