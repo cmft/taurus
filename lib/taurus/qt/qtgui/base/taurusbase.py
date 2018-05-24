@@ -807,6 +807,7 @@ class TaurusBaseComponent(TaurusListener, BaseConfigurableClass):
         in the next call to :method:`displayValue`.
         """
         self._format = None
+        self.getDisplayValue()
 
     def getDisplayValue(self, cache=True, fragmentName=None):
         """Returns a string representation of the model value associated with
