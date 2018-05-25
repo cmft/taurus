@@ -94,47 +94,47 @@ testOldFgroles = functools.partial(insertTest, helper_name='text', maxdepr=1,
                                    model='tango:' + DEV_NAME + '/double_scalar')
 
 
-@testOldFgroles(fgRole='value', expected='1.23 mm')
-@testOldFgroles(fgRole='w_value', expected='0.00 mm')
-@testOldFgroles(fgRole='state', expected='Ready')
+# @testOldFgroles(fgRole='value', expected='1.23 mm')
+# @testOldFgroles(fgRole='w_value', expected='0.00 mm')
+# @testOldFgroles(fgRole='state', expected='Ready')
 @testOldFgroles(fgRole='quality', expected='ATTR_VALID')
-@testOldFgroles(fgRole='none', expected='')
+# @testOldFgroles(fgRole='none', expected='')
 # ------------------------------------------------------------------------------
-@insertTest(helper_name='text',
-            model='tango:' + DEV_NAME + '/double_spectrum',
-            modelIndex=1,
-            expected='1.23 mm')
-@insertTest(helper_name='text',
-            model='tango:' + DEV_NAME + '/double_scalar#state',
-            expected='Ready')
-@insertTest(helper_name='text',
-            model='tango:' + DEV_NAME + '/double_scalar#rvalue',
-            fgRole='label',
-            expected='double_scalar')
-@insertTest(helper_name='text',
-            model='tango:' + DEV_NAME + '/double_scalar',
-            fgRole='label',
-            expected='double_scalar')
-@insertTest(helper_name='text',
-            model='tango:' + DEV_NAME + '/double_scalar#label',
-            expected='double_scalar')
+# @insertTest(helper_name='text',
+#             model='tango:' + DEV_NAME + '/double_spectrum',
+#             modelIndex=1,
+#             expected='1.23 mm')
+# @insertTest(helper_name='text',
+#             model='tango:' + DEV_NAME + '/double_scalar#state',
+#             expected='Ready')
+# @insertTest(helper_name='text',
+#             model='tango:' + DEV_NAME + '/double_scalar#rvalue',
+#             fgRole='label',
+#             expected='double_scalar')
+# @insertTest(helper_name='text',
+#             model='tango:' + DEV_NAME + '/double_scalar',
+#             fgRole='label',
+#             expected='double_scalar')
+# @insertTest(helper_name='text',
+#             model='tango:' + DEV_NAME + '/double_scalar#label',
+#             expected='double_scalar')
 # ------------------------------------------------------------------------------
-# Check bck-compat with pre-tep14  BgRoles: state, quality, none
-@insertTest(helper_name='bgRole',
-            model='tango:' + DEV_NAME + '/float_scalar_ro',
-            bgRole='none',
-            expected=Qt.QColor(Qt.Qt.transparent).getRgb()[:3])
-@insertTest(helper_name='bgRole',
-            model='tango:' + DEV_NAME + '/float_scalar_ro',
-            bgRole='state',
-            expected=DEVICE_STATE_DATA["TaurusDevState.Ready"][1:4])
-@insertTest(helper_name='bgRole',
-            model='tango:' + DEV_NAME + '/float_scalar_ro',
-            bgRole='quality',
-            expected=ATTRIBUTE_QUALITY_DATA["ATTR_VALID"][1:4])
-@insertTest(helper_name='bgRole',
-            model='tango:' + DEV_NAME + '/float_scalar_ro',
-            expected=ATTRIBUTE_QUALITY_DATA["ATTR_VALID"][1:4])
+# # Check bck-compat with pre-tep14  BgRoles: state, quality, none
+# @insertTest(helper_name='bgRole',
+#             model='tango:' + DEV_NAME + '/float_scalar_ro',
+#             bgRole='none',
+#             expected=Qt.QColor(Qt.Qt.transparent).getRgb()[:3])
+# @insertTest(helper_name='bgRole',
+#             model='tango:' + DEV_NAME + '/float_scalar_ro',
+#             bgRole='state',
+#             expected=DEVICE_STATE_DATA["TaurusDevState.Ready"][1:4])
+# @insertTest(helper_name='bgRole',
+#             model='tango:' + DEV_NAME + '/float_scalar_ro',
+#             bgRole='quality',
+#             expected=ATTRIBUTE_QUALITY_DATA["ATTR_VALID"][1:4])
+# @insertTest(helper_name='bgRole',
+#             model='tango:' + DEV_NAME + '/float_scalar_ro',
+#             expected=ATTRIBUTE_QUALITY_DATA["ATTR_VALID"][1:4])
 class TaurusLabelTest2(TangoSchemeTestLauncher, BaseWidgetTestCase,
                        unittest.TestCase):
     '''
