@@ -770,8 +770,8 @@ class TaurusBaseComponent(TaurusListener, BaseConfigurableClass):
 
     def setFormat(self, format):
         """ Method to set the `FORMAT` attribute for this instance.
-        It also resets the internal format string, which will be recalculated
-        in the next call to :method:`displayValue`
+        It also resets the internal format string, and forces a 
+        refresh of the displayed value.
 
         :param format: (str or callable) A format string
                        or a formatter callable (or the callable name in
@@ -803,8 +803,8 @@ class TaurusBaseComponent(TaurusListener, BaseConfigurableClass):
         return formatter
 
     def resetFormat(self):
-        """Reset the internal format string. It forces a recalculation
-        in the next call to :method:`displayValue`.
+        """Reset the internal format string. It also forces a recalculation
+        of the displayed value.
         """
         self._format = None
         self.getDisplayValue()
