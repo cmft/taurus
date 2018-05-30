@@ -90,6 +90,8 @@ class TaurusLabelController(TaurusBaseController):
         elif fgRole.lower() in ('', 'none'):
             pass
         else:
+            label.modelFragmentName = fgRole
+            label.resetFormat()
             value = label.getDisplayValue(fragmentName=fgRole)
         self._text = text = label.prefixText + value + label.suffixText
 
