@@ -807,7 +807,7 @@ class TaurusBaseComponent(TaurusListener, BaseConfigurableClass):
         of the displayed value.
         """
         self._format = None
-        self.getDisplayValue()
+        self.getDisplayValue(fragmentName=self.modelFragmentName)
 
     def getDisplayValue(self, cache=True, fragmentName=None):
         """Returns a string representation of the model value associated with
