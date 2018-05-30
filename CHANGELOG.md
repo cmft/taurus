@@ -21,6 +21,7 @@ develop branch) won't be reflected in this file.
 
 ### Fixed
 - TaurusModel ignoring the serialization mode (#678)
+- Apply new formatter without waiting an event(#753)
 
 ### Removed
 - All 3rd party code from taurus.external (now using dependencies
