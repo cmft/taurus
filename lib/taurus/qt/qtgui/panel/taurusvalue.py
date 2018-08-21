@@ -872,7 +872,11 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
             self._writeWidget.setForceDangerousOperations(
                 self.getForceDangerousOperations())
             if self.minimumHeight() is not None:
-                self._writeWidget.setMinimumHeight(self.minimumHeight())
+                if self.writeWidgetClassID == 'TaurusWheelEdit':
+                    self._writeWidget.setMinimumHeight(
+                        self.minimumHeight() * 2)
+                else:
+                    self._writeWidget.setMinimumHeight(self.minimumHeight())
 
             # set the model for the subwidget
             if hasattr(self._writeWidget, 'setModel'):
