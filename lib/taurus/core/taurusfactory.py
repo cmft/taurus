@@ -217,7 +217,8 @@ class TaurusFactory(object):
         try:
             # this works only if the devname is present in the attr full name
             # (not all schemes are constructed in this way)
-            devname = v.getUriGroups(fullname)['devname']
+            groups = v.getUriGroups(fullname)
+            devname = '{0}:{1}'.format(groups['scheme'], groups['devname'])
             dev = self.getDevice(devname)
         except:
             self.debug('Cannot get attribute parent from name "%s"', fullname)
