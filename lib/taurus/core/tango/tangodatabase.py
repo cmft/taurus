@@ -679,8 +679,12 @@ class TangoAuthority(TaurusAuthority):
 
         # Set host to fqdn
         host = socket.getfqdn(host)
+        try:
+            self.dbObj = Database(host, port)
+        except Exception as e:
+            from taurus import warning
+            warning(e)
 
-        self.dbObj = Database(host, port)
         self._dbProxy = None
         self._dbCache = None
 
