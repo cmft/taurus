@@ -683,7 +683,8 @@ class TangoAuthority(TaurusAuthority):
             self.dbObj = Database(host, port)
         except Exception as e:
             from taurus import warning
-            warning(e)
+            warning("Cannot connect with Tango DB: %r", e)
+            self.dbObj = None
 
         self._dbProxy = None
         self._dbCache = None
