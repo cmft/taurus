@@ -52,10 +52,10 @@ class TangoAuthorityNameValidator(TaurusAuthorityNameValidator):
     '''
 
     scheme = 'tango'
-    authority = '//((?P<host>([\w\-_]+\.)*[\w\-_]+):(?P<port>\d{1,5})' \
-                '|.dynamic_auth.' \
-                '|([\w\-_]+\.)*[\w\-_]+:\d{1,5}' \
-                '(,([\w\-_]+\.)*[\w\-_]+:\d{1,5})+)'
+    authority = ('//((?P<host>([\w\-_]+\.)*[\w\-_]+):(?P<port>\d{1,5})'
+                 + '|.dynamic_auth.'
+                 + '|([\w\-_]+\.)*[\w\-_]+:\d{1,5}'
+                 + '(,([\w\-_]+\.)*[\w\-_]+:\d{1,5})+)')
     path = '(?!)'
     query = '(?!)'
     fragment = '(?!)'
@@ -66,9 +66,9 @@ class TangoAuthorityNameValidator(TaurusAuthorityNameValidator):
         '''
         ret = TaurusAuthorityNameValidator.getUriGroups(self, name, strict)
         if ret is not None and ret.get("host", None) is not None:
-                fqdn = socket.getfqdn(ret["host"])
-                ret["host"] = fqdn
-                ret["authority"] = "//{host}:{port}".format(**ret)
+            fqdn = socket.getfqdn(ret["host"])
+            ret["host"] = fqdn
+            ret["authority"] = "//{host}:{port}".format(**ret)
         return ret
 
 
@@ -100,9 +100,9 @@ class TangoDeviceNameValidator(TaurusDeviceNameValidator):
         '''
         ret = TaurusDeviceNameValidator.getUriGroups(self, name, strict)
         if ret is not None and ret.get("host", None) is not None:
-                fqdn = socket.getfqdn(ret["host"])
-                ret["host"] = fqdn
-                ret["authority"] = "//{host}:{port}".format(**ret)
+            fqdn = socket.getfqdn(ret["host"])
+            ret["host"] = fqdn
+            ret["authority"] = "//{host}:{port}".format(**ret)
         return ret
 
     def getNames(self, fullname, factory=None, queryAuth=True):
