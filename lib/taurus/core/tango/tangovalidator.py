@@ -52,7 +52,10 @@ class TangoAuthorityNameValidator(TaurusAuthorityNameValidator):
     '''
 
     scheme = 'tango'
-    authority = '//(?P<host>([\w\-_]+\.)*[\w\-_]+):(?P<port>\d{1,5})'
+    authority = '//((?P<host>([\w\-_]+\.)*[\w\-_]+):(?P<port>\d{1,5})' \
+                '|.dynamic_auth.' \
+                '|([\w\-_]+\.)*[\w\-_]+:\d{1,5}' \
+                '(,([\w\-_]+\.)*[\w\-_]+:\d{1,5})+)'
     path = '(?!)'
     query = '(?!)'
     fragment = '(?!)'
@@ -62,10 +65,10 @@ class TangoAuthorityNameValidator(TaurusAuthorityNameValidator):
         name using fully qualified domain name for the host.
         '''
         ret = TaurusAuthorityNameValidator.getUriGroups(self, name, strict)
-        if ret is not None:
-            fqdn = socket.getfqdn(ret["host"])
-            ret["host"] = fqdn
-            ret["authority"] = "//{host}:{port}".format(**ret)
+        if ret is not None and ret.get("host", None) is not None:
+                fqdn = socket.getfqdn(ret["host"])
+                ret["host"] = fqdn
+                ret["authority"] = "//{host}:{port}".format(**ret)
         return ret
 
 
@@ -97,9 +100,9 @@ class TangoDeviceNameValidator(TaurusDeviceNameValidator):
         '''
         ret = TaurusDeviceNameValidator.getUriGroups(self, name, strict)
         if ret is not None and ret.get("host", None) is not None:
-            fqdn = socket.getfqdn(ret["host"])
-            ret["host"] = fqdn
-            ret["authority"] = "//{host}:{port}".format(**ret)
+                fqdn = socket.getfqdn(ret["host"])
+                ret["host"] = fqdn
+                ret["authority"] = "//{host}:{port}".format(**ret)
         return ret
 
     def getNames(self, fullname, factory=None, queryAuth=True):
@@ -120,10 +123,10 @@ class TangoDeviceNameValidator(TaurusDeviceNameValidator):
 
         if default_authority is None:
             import PyTango
-            host, port = PyTango.ApiUtil.get_env_var('TANGO_HOST').split(":")
-            # Get the fully qualified domain name
-            host = socket.getfqdn(host)
-            default_authority = "//{0}:{1}".format(host, port)
+            tango_host = PyTango.ApiUtil.get_env_var('TANGO_HOST')
+            v = TangoAuthorityNameValidator()
+            g = v.getUriGroups('tango://{}'.format(tango_host))
+            default_authority = g.get('authority')
 
         authority = groups.get('authority')
         if authority is None:
@@ -221,10 +224,14 @@ class TangoAttributeNameValidator(TaurusAttributeNameValidator):
         name using fully qualified domain name for the host.
         '''
         ret = TaurusAttributeNameValidator.getUriGroups(self, name, strict)
-        if ret is not None and ret.get("host", None) is not None:
-            fqdn = socket.getfqdn(ret["host"])
-            ret["host"] = fqdn
-            ret["authority"] = "//{host}:{port}".format(**ret)
+        if ret is not None:
+            if ret.get("host", None) is not None:
+                fqdn = socket.getfqdn(ret["host"])
+                ret["host"] = fqdn
+                auth = "//{host}:{port}".format(**ret)
+            else:
+                auth = "//.dynamic_auth."
+            ret["authority"] = auth
         return ret
 
     def getNames(self, fullname, factory=None, queryAuth=True, fragment=False):

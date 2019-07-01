@@ -43,6 +43,7 @@ from taurus.core.taurusbasetypes import TaurusDevState, TaurusEventType
 from taurus.core.taurusauthority import TaurusAuthority
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.log import taurus4_deprecation
+from taurus.core.tango.tangovalidator import TangoAuthorityNameValidator
 
 
 __all__ = ["TangoInfo", "TangoAttrInfo", "TangoDevInfo", "TangoServInfo",
@@ -673,19 +674,31 @@ class TangoAuthority(TaurusAuthority):
         if host is None or port is None:
             try:
                 _hp = TangoAuthority.get_default_tango_host()
-                host, port = _hp.rsplit(':', 1)
+                v = TangoAuthorityNameValidator()
+                g = v.getUriGroups('tango://{}'.format(_hp))
+                host = g.get('host', None)
+                port = g.get('port', None)
+                if host is None:
+                    complete_name = "tango://.dynamic_auth."
+                else:
+                    host, port = _hp.rsplit(':', 1)
             except Exception:
                 from taurus import warning
                 warning("Error getting default Tango host")
 
         # Set host to fqdn
-        host = socket.getfqdn(host)
+        if host is not None:
+            host = socket.getfqdn(host)
+            db = Database(host, port)
+            complete_name = "tango://%s:%s" % (host, port)
+        else:
+            db = Database()
 
-        self.dbObj = Database(host, port)
+        self.dbObj = db
         self._dbProxy = None
         self._dbCache = None
 
-        complete_name = "tango://%s:%s" % (host, port)
+
         self.call__init__(TaurusAuthority, complete_name, parent)
 
         try:

@@ -276,7 +276,8 @@ class TangoFactory(Singleton, TaurusFactory, Logger):
         if name is None:
             if self.dft_db is None:
                 try:
-                    if self._default_tango_host is None:
+                    if (self._default_tango_host is None
+                            or self._default_tango_host == '.dynamic_auth.'):
                         self.dft_db = _Authority()
                     else:
                         name = self._default_tango_host

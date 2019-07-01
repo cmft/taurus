@@ -34,6 +34,7 @@ from taurus.core.taurusdevice import TaurusDevice
 from taurus.core.taurusbasetypes import (TaurusDevState, TaurusLockInfo,
                                          LockStatus, TaurusEventType)
 from taurus.core.util.log import taurus4_deprecation
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 
 __all__ = ["TangoDevice"]
@@ -206,7 +207,12 @@ class TangoDevice(TaurusDevice):
 
     def _createHWObject(self):
         try:
-            return DeviceProxy(self.getFullName())
+            v = TangoDeviceNameValidator()
+            g = v.getUriGroups(self.getFullName())
+            if g['authority'] != '//.dynamic_auth.':
+                return DeviceProxy(self.getFullName())
+            else:
+                return DeviceProxy(self.getSimpleName())
         except DevFailed as e:
             self.warning('Could not create HW object: %s' % (e.args[0].desc))
             self.traceback()
