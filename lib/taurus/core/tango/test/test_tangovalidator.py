@@ -48,8 +48,13 @@ __TANGO_HOST = "{0}:{1}".format(socket.getfqdn(host), port)
 # Tests for Tango Authority  name validation
 #=========================================================================
 @valid(name='tango://foo:10000')
+@valid(name='tango://foo:10000,foo:20000')
+@valid(name='tango://.dynamic_auth.')
 @invalid(name='tango:foo')
+@invalid(name='tango:foo,')
 @invalid(name='tango:foo:10000')
+@invalid(name='tango://foo:10000,')
+@invalid(name='tango://foo:10000,bar')
 @invalid(name='tango://foo:10000/')
 @invalid(name='tango://foo:10000/?')
 @invalid(name='tango://foo:bar')
